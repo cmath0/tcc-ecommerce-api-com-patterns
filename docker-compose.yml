@@ -1,0 +1,36 @@
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-ecommerce-refatorado
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ecommerce_db
+      MYSQL_USER: ecommerce_user
+      MYSQL_PASSWORD: ecommerce_pass
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - ecommerce-network-refatorado
+
+  ecommerce-app:
+    build: .
+    container_name: ecommerce-api-refatorado
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/ecommerce_db
+      SPRING_DATASOURCE_USERNAME: ecommerce_user
+      SPRING_DATASOURCE_PASSWORD: ecommerce_pass
+    networks:
+      - ecommerce-network-refatorado
+
+volumes:
+  mysql-data:
+
+networks:
+  ecommerce-network-refatorado:
+    driver: bridge
