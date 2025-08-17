@@ -9,34 +9,11 @@ import org.springframework.stereotype.Component;
 
 import com.github.cmath0.ecommerce.entity.Pedido;
 import com.github.cmath0.ecommerce.entity.Produto;
-import com.github.cmath0.ecommerce.repository.PedidoRepository;
 import com.github.cmath0.ecommerce.repository.ProdutoRepository;
-import com.github.cmath0.ecommerce.type.StatusPedido;
 
 @Component
 public class PedidoValidator {
 
-	public Pedido validarNovoStatus(int novoStatus, long idPedido, final PedidoRepository pedidoRepository) {
-		if (!StatusPedido.isValid(novoStatus)) {
-			throw new IllegalArgumentException(String.format("Código de status '%d' inválido.", novoStatus));
-		}
-		
-		if (!pedidoRepository.existsById(idPedido)) {
-			throw new IllegalArgumentException(String.format("Pedido '%d' não encontrado", idPedido));
-		}
-		
-		Pedido pedido = pedidoRepository.getReferenceById(idPedido);
-		
-		if (novoStatus == pedido.getStatus()) {
-			throw new IllegalArgumentException(String.format("Pedido já possui o status '%d - %s'.", 
-					novoStatus, StatusPedido.fromCodigo(novoStatus).getDescricao()));
-		}
-		
-		pedido.setStatus(novoStatus);
-		
-		return pedido;
-	}
-	
 	public Map<Long, Produto> validarProdutosDoPedido(Pedido pedido, ProdutoRepository produtoRepository) {
 		if (pedido.getProdutosDoPedido() == null || pedido.getProdutosDoPedido().isEmpty()) {
 			throw new IllegalArgumentException("O pedido deve conter pelo menos um produto.");

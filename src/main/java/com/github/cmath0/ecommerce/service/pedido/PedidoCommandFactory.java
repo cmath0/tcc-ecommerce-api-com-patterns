@@ -25,6 +25,10 @@ public class PedidoCommandFactory {
     }
 
     public AtualizarStatusPedidoCommand atualizarStatusPedidoCommand(long id, int status) {
-        return new AtualizarStatusPedidoCommand(id, status, pedidoRepository, produtoRepository, pedidoValidator);
+    	StatusPedidoAlteradoPublisher statusPedidoAlteradoPublisher = StatusPedidoAlteradoPublisher.getInstance(
+    			new EnviarEmailStatusPedidoAlterado(),
+    			new AtualizarEstoqueStatusPedidoAlterado());
+    	
+        return new AtualizarStatusPedidoCommand(id, status, pedidoRepository, statusPedidoAlteradoPublisher);
     }
 }
