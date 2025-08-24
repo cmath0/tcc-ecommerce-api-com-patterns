@@ -32,8 +32,10 @@ public class PedidoController {
 	}
 	
 	@PostMapping
-	public Pedido efetuarPedido(@RequestBody NovoPedidoRequestDTO dto) {
-		return service.efetuarPedido(PedidoMapper.toEntity(dto));
+	public PedidoResponseDTO efetuarPedido(@RequestBody NovoPedidoRequestDTO dto) {
+		Pedido pedido = service.efetuarPedido(PedidoMapper.toEntity(dto));
+		
+		return PedidoMapper.toResponseDTO(pedido);
 	}
 	
 	@PatchMapping("/{id}/status")

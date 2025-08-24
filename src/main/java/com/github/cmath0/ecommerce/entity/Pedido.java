@@ -31,7 +31,10 @@ public class Pedido {
 	
 	@ElementCollection
 	private List<Long> produtosDoPedido;
+	private double valorSubtotal;
 	private double valorTotal;
 	private int status;
 	private Long clienteId;
+	private String cupomDesconto;
+	private String obsDescontos;
 }

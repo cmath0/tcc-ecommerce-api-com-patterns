@@ -17,8 +17,12 @@ public class PedidoMapper {
 				pedido.getData(),
 				pedido.getProdutosDoPedido(),
 				pedido.getValorTotal(),
+				pedido.getValorSubtotal(),
 				pedido.getStatus(),
-				pedido.getClienteId());
+				pedido.getClienteId(),
+				pedido.getCupomDesconto(),
+				pedido.getObsDescontos()
+			);
 	}
 	
 	public static List<PedidoResponseDTO> toResponseDTOList(List<Pedido> pedidos) {

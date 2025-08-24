@@ -17,6 +17,9 @@ public class PedidoResponseDTO {
 	private String data;
 	private List<Long> produtosDoPedido;
 	private double valorTotal;
+	private double valorSubtotal;
 	private int status;
 	private Long clienteId;
+	private String cupomDesconto;
+	private String obsDescontos;
 }

@@ -2,28 +2,26 @@ package com.github.cmath0.ecommerce.service.pedido;
 
 import java.util.Map;
 
-import com.github.cmath0.ecommerce.entity.Cliente;
 import com.github.cmath0.ecommerce.entity.Pedido;
 import com.github.cmath0.ecommerce.entity.Produto;
 import com.github.cmath0.ecommerce.repository.PedidoRepository;
 import com.github.cmath0.ecommerce.repository.ProdutoRepository;
-import com.github.cmath0.ecommerce.service.ClienteService;
+import com.github.cmath0.ecommerce.service.pedido.desconto.CadeiaDescontos;
+import com.github.cmath0.ecommerce.service.pedido.desconto.ContextoDesconto;
+import com.github.cmath0.ecommerce.service.pedido.desconto.DescontoHandler;
 import com.github.cmath0.ecommerce.type.StatusPedido;
-import com.github.cmath0.ecommerce.type.TipoCliente;
 import com.github.cmath0.ecommerce.validator.PedidoValidator;
 
 public class EfetuarPedidoCommand implements PedidoCommand {
 
-	private final ClienteService clienteService;
 	private final PedidoRepository pedidoRepository;
 	private final ProdutoRepository produtoRepository;
 	private final PedidoValidator pedidoValidator;
 	
 	private final Pedido pedido;
 	
-	public EfetuarPedidoCommand(Pedido pedido, ClienteService clienteService, PedidoRepository pedidoRepository, ProdutoRepository produtoRepository, PedidoValidator pedidoValidator) {
+	public EfetuarPedidoCommand(Pedido pedido, PedidoRepository pedidoRepository, ProdutoRepository produtoRepository, PedidoValidator pedidoValidator) {
 		this.pedido = pedido;
-		this.clienteService = clienteService;
 		this.pedidoRepository = pedidoRepository;
 		this.produtoRepository = produtoRepository;
 		this.pedidoValidator = pedidoValidator;
@@ -32,6 +30,7 @@ public class EfetuarPedidoCommand implements PedidoCommand {
 	@Override
 	public Pedido executar() {
 		pedido.setValorTotal(0.0);
+		pedido.setValorSubtotal(0.0);
 		pedido.setStatus(StatusPedido.AGUARDANDO_PAGAMENTO.getCodigo());
 		
 		Map<Long, Produto> produtosDoPedido = pedidoValidator.validarProdutosDoPedido(pedido, produtoRepository);
@@ -40,23 +39,22 @@ public class EfetuarPedidoCommand implements PedidoCommand {
 			Produto produto = produtosDoPedido.get(produtoId);
 			
 			produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() - 1);
-			pedido.setValorTotal(pedido.getValorTotal() + produto.getPreco());
+			pedido.setValorSubtotal(pedido.getValorSubtotal() + produto.getPreco());
 		}
+		pedido.setValorTotal(pedido.getValorSubtotal());
 		
-		calcularDesconto();
+		calcularDescontos();
 		produtoRepository.saveAll(produtosDoPedido.values());
 		
 		return pedidoRepository.save(pedido);
 	}
 
-	private void calcularDesconto() {
-		Cliente cliente = clienteService.buscarPorId(pedido.getClienteId());
+	private void calcularDescontos() {
+		DescontoHandler descontoHandler = CadeiaDescontos.criarCadeiaPadrao();
 		
-		if (cliente != null) {
-			DescontoStrategy descontoStrategy = DescontoStrategyFactory.getDescontoStrategy(TipoCliente.fromNivel(cliente.getNivel()));
-			
-			descontoStrategy.aplicarDesconto(pedido);
-		}
+		ContextoDesconto descontos = descontoHandler.aplicarDesconto(pedido, new ContextoDesconto(pedido.getValorSubtotal()));
+		pedido.setValorTotal(descontos.getValorSubtotalPedido() - descontos.getValorDescontos());
+		pedido.setObsDescontos(descontos.getDescontosAplicados());
 	}
 
 }
