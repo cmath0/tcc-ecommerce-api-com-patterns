@@ -53,6 +53,7 @@ public class EfetuarPedidoCommand implements PedidoCommand {
 		DescontoHandler descontoHandler = CadeiaDescontos.criarCadeiaPadrao();
 		
 		ContextoDesconto descontos = descontoHandler.aplicarDesconto(pedido, new ContextoDesconto(pedido.getValorSubtotal()));
+		pedido.setValorDescontos(descontos.getValorDescontos());
 		pedido.setValorTotal(descontos.getValorSubtotalPedido() - descontos.getValorDescontos());
 		pedido.setObsDescontos(descontos.getDescontosAplicados());
 	}
