@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import com.github.cmath0.ecommerce.entity.Pedido;
 import com.github.cmath0.ecommerce.repository.PedidoRepository;
 import com.github.cmath0.ecommerce.repository.ProdutoRepository;
+import com.github.cmath0.ecommerce.service.frete.FreteService;
 import com.github.cmath0.ecommerce.validator.PedidoValidator;
 
 @Component
@@ -17,8 +18,10 @@ public class PedidoCommandFactory {
 
     @Autowired private PedidoValidator pedidoValidator;
     
+    @Autowired private FreteService freteService;
+    
     public EfetuarPedidoCommand efetuarPedidoCommand(Pedido pedido) {
-        return new EfetuarPedidoCommand(pedido, pedidoRepository, produtoRepository, pedidoValidator);
+        return new EfetuarPedidoCommand(pedido, pedidoRepository, produtoRepository, pedidoValidator, freteService);
     }
 
     public AtualizarStatusPedidoCommand atualizarStatusPedidoCommand(long id, int status) {

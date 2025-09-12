@@ -33,9 +33,14 @@ public class Pedido {
 	private List<Long> produtosDoPedido;
 	private double valorSubtotal;
 	private double valorDescontos;
+	private double valorFrete;
 	private double valorTotal;
 	private int status;
 	private Long clienteId;
 	private String cupomDesconto;
 	private String obsDescontos;
+	private int pesoTotalEmGramas;
+	private String cepOrigem;
+	private String cepDestino;
+	private int tipoEntrega;
 }

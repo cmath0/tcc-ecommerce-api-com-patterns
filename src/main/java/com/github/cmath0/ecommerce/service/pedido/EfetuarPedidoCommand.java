@@ -2,10 +2,13 @@ package com.github.cmath0.ecommerce.service.pedido;
 
 import java.util.Map;
 
+import com.github.cmath0.ecommerce.dto.frete.CotacaoFreteRequestDTO;
 import com.github.cmath0.ecommerce.entity.Pedido;
 import com.github.cmath0.ecommerce.entity.Produto;
 import com.github.cmath0.ecommerce.repository.PedidoRepository;
 import com.github.cmath0.ecommerce.repository.ProdutoRepository;
+import com.github.cmath0.ecommerce.service.frete.CotacaoFrete;
+import com.github.cmath0.ecommerce.service.frete.FreteService;
 import com.github.cmath0.ecommerce.service.pedido.desconto.CadeiaDescontos;
 import com.github.cmath0.ecommerce.service.pedido.desconto.ContextoDesconto;
 import com.github.cmath0.ecommerce.service.pedido.desconto.DescontoHandler;
@@ -17,14 +20,16 @@ public class EfetuarPedidoCommand implements PedidoCommand {
 	private final PedidoRepository pedidoRepository;
 	private final ProdutoRepository produtoRepository;
 	private final PedidoValidator pedidoValidator;
+	private final FreteService freteService;
 	
 	private final Pedido pedido;
 	
-	public EfetuarPedidoCommand(Pedido pedido, PedidoRepository pedidoRepository, ProdutoRepository produtoRepository, PedidoValidator pedidoValidator) {
+	public EfetuarPedidoCommand(Pedido pedido, PedidoRepository pedidoRepository, ProdutoRepository produtoRepository, PedidoValidator pedidoValidator, FreteService freteService) {
 		this.pedido = pedido;
 		this.pedidoRepository = pedidoRepository;
 		this.produtoRepository = produtoRepository;
 		this.pedidoValidator = pedidoValidator;
+		this.freteService = freteService;
 	}
 	
 	@Override
@@ -44,9 +49,20 @@ public class EfetuarPedidoCommand implements PedidoCommand {
 		pedido.setValorTotal(pedido.getValorSubtotal());
 		
 		calcularDescontos();
+		
+		calcularFrete();
+		
 		produtoRepository.saveAll(produtosDoPedido.values());
 		
 		return pedidoRepository.save(pedido);
+	}
+
+	private void calcularFrete() {
+		CotacaoFreteRequestDTO cotacaoRequestDto = new CotacaoFreteRequestDTO(pedido.getValorSubtotal(), pedido.getCepDestino(), pedido.getPesoTotalEmGramas(), pedido.getTipoEntrega());
+		
+		CotacaoFrete cotacaoFrete = freteService.calcularFrete(cotacaoRequestDto);
+		pedido.setValorFrete(cotacaoFrete.getValorFrete());
+		pedido.setValorTotal(pedido.getValorTotal() + cotacaoFrete.getValorFrete());
 	}
 
 	private void calcularDescontos() {
